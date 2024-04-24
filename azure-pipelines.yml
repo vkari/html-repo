@@ -21,9 +21,9 @@ steps:
     ArtifactName: 'html_project'
     publishLocation: 'container'
 
-- task: AzureWebApp@1
-  displayName: 'Deploy to Azure Web App'
-  inputs:
-    azureSubscription: 'github.com_vkari'
-    appName: 'test'
-    package: '$(Build.ArtifactStagingDirectory)/html_project.zip'
+# - task: AzureWebApp@1
+#   displayName: 'Deploy to Azure Web App'
+#   inputs:
+#     azureSubscription: 'github.com_vkari'
+#     appName: 'test'
+#     package: '$(Build.ArtifactStagingDirectory)/html_project.zip'
