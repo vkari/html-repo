@@ -24,6 +24,6 @@ steps:
 - task: AzureWebApp@1
   displayName: 'Deploy to Azure Web App'
   inputs:
-    azureSubscription: '<Your-Azure-Subscription-Service-Connection>'
-    appName: '<Your-Web-App-Name>'
+    azureSubscription: 'github.com_vkari'
+    appName: 'test'
     package: '$(Build.ArtifactStagingDirectory)/html_project.zip'
