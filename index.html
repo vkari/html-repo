@@ -1,0 +1,1134 @@
+<html>
+
+<head>
+    <meta charset="UTF-8" <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="./srindex.jsc/app.css">
+    <title>supply chain Health State</title>
+
+</head>
+
+<body>
+<div class="table-refresh" data-url="/data"></div>
+<script type="text/javascript" language="javascript">
+        function status(id, url, urlBranch, tdElement, aElement) {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status != 200) {
+                    tdElement.className = "border border-danger"
+                    aElement.innerHTML = "Service Down";
+                    aElement.className = "badge badge-pill badge-danger";
+                } else if (this.readyState == 4 && this.status == 200) {
+                    branch(id, urlBranch, aElement, tdElement)
+                    artifact(id, urlBranch, aElement, tdElement)
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+        }
+        function branch(id, url, aElement, tdElement) {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if ((!id.includes("cc")) && (!id.includes("sterling")) && (!id.includes("dsui")) && (!id.includes("rsui")))
+                    if (this.readyState == 4 && this.status == 200) {
+                        var json = JSON.parse(xmlhttp.responseText)
+                        var branch = json.git.branch;
+                        tdElement.className = "border border-success"
+                        aElement.innerHTML = branch;
+                        aElement.className = "badge bg-success text-white";
+
+                    } else {
+                        tdElement.className = "border border-success"
+                        aElement.innerHTML = "Unknown Branch";
+                        aElement.className = "badge badge-pill badge-warning";
+                    }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+        }
+        function artifact(id, url, aElement, tdElement) {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (id.includes("cc") || id.includes("sterling") || id.includes("dsui") || id.includes("rsui"))
+                    if (this.readyState == 4 && this.status == 200) {
+                        var text = this.responseText
+                        var firstLine = text.split('\n').shift();
+                        var n = firstLine.lastIndexOf('=');
+                        var artifactID = firstLine.substring(n + 1);
+                        tdElement.className = "border border-success"
+                        aElement.innerHTML = artifactID;
+                        aElement.className = " badge bg-success text-white";
+                    } else {
+                        tdElement.className = "border border-success"
+                        aElement.innerHTML = "Unknown Artifact";
+                        aElement.className = "badge badge-pill badge-warning";
+                    }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+        }
+        function createEnvironmentTable(id, server, port) {
+            var elementTD = document.getElementById(id);
+
+            if (id.includes("dax")) {
+                urlStatus = "https://" + server + ".wsgc.com:" + port + "/actuator/health"
+                urlBranch = "https://" + server + ".wsgc.com:" + port + "/actuator/info"
+            } else if (id.includes("local")) {
+                urlStatus = "https://" + server + ":" + port + "/actuator/health"
+                urlBranch = "https://" + server + ":" + port + "/actuator/info"
+            } else if (id.includes("ccui*")) {
+                urlStatus = "https://" + server + ":" + port + "/oms/build.info"
+                urlBranch = "https://" + server + ":" + port + "/oms/build.info"
+            } else if (id.includes("sterling")) {
+                urlStatus = "https://" + server + ".wsgc.com:" + port + "/smcfs/console/login.jsp"
+                urlBranch = "https://" + server + ".wsgc.com:" + port + "/smcfs/extn/build.info"
+            } else if (id.includes("dsui")) {
+                urlStatus = "https://" + server + ".wsgc.com:" + port + "/directshipment/login.html"
+                urlBranch = "https://" + server + ".wsgc.com:" + port + "/directshipment/build.info"
+            } else if (id.includes("rsui")) {
+                urlStatus = "https://" + server + ".wsgc.com:" + port + "/WSIReturnsApp/index.html"
+                urlBranch = "https://" + server + ".wsgc.com:" + port + "/WSIReturnsApp/build.info"
+            } else if (id.includes("cc")) {
+                urlStatus = "https://" + server + ".wsgc.com:" + port + "/oms/build.info"
+                urlBranch = "https://" + server + ".wsgc.com:" + port + "/oms/build.info"
+            } else {
+                urlStatus = "https://" + server + ".wsgc.com:" + port + "/actuator/health"
+                urlBranch = "https://" + server + ".wsgc.com:" + port + "/actuator/info"
+            }
+
+            var elementLinkStatus = document.createElement("a");
+            var elementLinkBranch = document.createElement("a");
+            var elementLinkArtifact = document.createElement("a");
+
+            elementLinkStatus.href = urlBranch;
+            elementLinkStatus.target = "_blank";
+            status(id, urlStatus, urlBranch, elementTD, elementLinkStatus);
+
+            elementLinkBranch.href = urlBranch;
+            elementLinkBranch.target = "_blank";
+            branch(id, urlBranch, elementLinkBranch);
+
+            elementLinkArtifact.href = urlBranch;
+            elementLinkArtifact.target = "_blank";
+            artifact(id, urlBranch, elementLinkArtifact);
+
+            elementTD.appendChild(elementLinkStatus);
+            elementTD.appendChild(elementLinkArtifact);
+            elementTD.appendChild(elementLinkBranch);
+        }
+
+    </script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+      integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+</head>
+
+<body style=" height:10%; width:100%; background-color: #fefefe; color:#164104">
+<center>
+    <marquee>
+        <h1> Supply Chain Health Checks</h1>
+    </marquee>
+    <table class="table table-striped table-bordered table-hover" style=" text-align: center;height:10%; width:10%; ">
+        <tr>
+            <th scope="col">Service name</th>
+            <th scope="col">PROD</th>
+            <th scope="col">DR</th>
+            <th scope="col">PRF1</th>
+            <th scope="col">EQA1</th>
+            <th scope="col">EQA2</th>
+            <th scope="col">EQA3</th>
+            <th scope="col">DIT1</th>
+            <th scope="col">DIT2</th>
+            <th scope="col">DIT3</th>
+
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info" href="./data/history.html" target="_blank">CCUI</a></td>
+            <td id="ccui-prod-1">
+                <script>javascript: createEnvironmentTable('ccui-prod-1', 'carectruiprd', '')</script>
+            </td>
+            <td id="ccui-prod-2">
+                <script>javascript: createEnvironmentTable('ccui-prod-2', 'carectruiprd-dr', '')</script>
+            </td>
+            <td id="ccui-prf1">
+                <script>javascript: createEnvironmentTable('ccui-prf1', 'prf1-ccui', '')</script>
+            </td>
+            <td id="ccui-stst">
+                <script>javascript: createEnvironmentTable('ccui-stst', 'eqa1-ccui', '')</script>
+            </td>
+            <td id="ccui-stst2">
+                <script>javascript: createEnvironmentTable('ccui-stst2', 'eqa2-ccui', '')</script>
+            </td>
+            <td id="ccui-eqa3">
+                <script>javascript: createEnvironmentTable('ccui-eqa3', 'eqa3-ccui', '')</script>
+            </td>
+            <td id="ccui-dit1">
+                <script>javascript: createEnvironmentTable('ccui-dit1', 'dit1-ccui', '')</script>
+            </td>
+            <td id="ccui-dit2">
+                <script>javascript: createEnvironmentTable('ccui-dit2', 'dit2-ccui', '')</script>
+            </td>
+            <td id="ccui-dit3">
+                <script>javascript: createEnvironmentTable('ccui-dit3', 'dit3-ccui', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info" href="https://supplychain-build.wsgc.com/view/"
+                                            target="_blank">DSUI</a></td>
+            <td id="dsui-prod-1">
+                <script>javascript: createEnvironmentTable('dsui-prod-1', 'dsuiappprd', '')</script>
+            </td>
+            <td id="dsui-prod-2">
+                <script>javascript: createEnvironmentTable('dsui-prod-2', 'dsuiappprd-dr', '')</script>
+            </td>
+            <td id="dsui-prf1">
+                <script>javascript: createEnvironmentTable('dsui-prf1', 'prf1-dsui', '')</script>
+            </td>
+            <td id="dsui-stst">
+                <script>javascript: createEnvironmentTable('dsui-stst', 'eqa1-dsui', '')</script>
+            </td>
+            <td id="dsui-stst2">
+                <script>javascript: createEnvironmentTable('dsui-stst2', 'eqa2-dsui', '')</script>
+            </td>
+            <td id="dsui-eqa3">
+                <script>javascript: createEnvironmentTable('dsui-eqa3', 'eqa3-dsui', '')</script>
+            </td>
+            <td id="dsui-dit1">
+                <script>javascript: createEnvironmentTable('dsui-dit1', 'dit1-dsui', '')</script>
+            </td>
+            <td id="dsui-dit2">
+                <script>javascript: createEnvironmentTable('dsui-dit2', 'dit2-dsui', '')</script>
+            </td>
+            <td id="dsui-dit3">
+                <script>javascript: createEnvironmentTable('dsui-dit3', 'dit3-dsui', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info" href="https://supplychain-build.wsgc.com/view/"
+                                            target="_blank">RSUI</a></td>
+            <td id="rsui-prod-1">
+                <script>javascript: createEnvironmentTable('rsui-prod-1', 'returnsapp', '')</script>
+            </td>
+            <td id="rsui-prod-2">
+                <script>javascript: createEnvironmentTable('rsui-prod-2', 'returnsapp-dr', '')</script>
+            </td>
+            <td id="rsui-prf1">
+                <script>javascript: createEnvironmentTable('rsui-prf1', 'prf1-rsui', '')</script>
+            </td>
+            <td id="rsui-stst">
+                <script>javascript: createEnvironmentTable('rsui-stst', 'eqa1-rsui', '')</script>
+            </td>
+            <td id="rsui-stst2">
+                <script>javascript: createEnvironmentTable('rsui-stst2', 'eqa2-rsui', '')</script>
+            </td>
+            <td id="rsui-eqa3">
+                <script>javascript: createEnvironmentTable('rsui-eqa3', 'eqa3-rsui', '')</script>
+            </td>
+            <td id="rsui-dit1">
+                <script>javascript: createEnvironmentTable('rsui-dit1', 'dit1-rsui', '')</script>
+            </td>
+            <td id="rsui-dit2">
+                <script>javascript: createEnvironmentTable('rsui-dit2', 'dit2-rsui', '')</script>
+            </td>
+            <td id="rsui-dit3">
+                <script>javascript: createEnvironmentTable('rsui-dit3', 'dit3-rsui', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info" href="https://supplychain-build.wsgc.com/view/"
+                                            target="_blank">Sterling</a></td>
+            <td id="sterling-prod-1">
+                <script>javascript: createEnvironmentTable('sterling-prod-1', 'sterlingprd', '18443')</script>
+            </td>
+            <td id="sterling-prod-2">
+                <script>javascript: createEnvironmentTable('sterling-prod-2', 'sterlingprd-dr', '18443')</script>
+            </td>
+            <td id="sterling-prf1">
+                <script>javascript: createEnvironmentTable('sterling-prf1', 'prf1-sterling', '')</script>
+            </td>
+            <td id="sterling-stst">
+                <script>javascript: createEnvironmentTable('sterling-stst', 'eqa1-sterling', '')</script>
+            </td>
+            <td id="sterling-stst2">
+                <script>javascript: createEnvironmentTable('sterling-stst2', 'eqa2-sterling', '')</script>
+            </td>
+            <td id="sterling-eqa3">
+                <script>javascript: createEnvironmentTable('sterling-eqa3', 'eqa3-sterling', '')</script>
+            </td>
+            <td id="sterling-dit1">
+                <script>javascript: createEnvironmentTable('sterling-dit1', 'dit1-sterling', '')</script>
+            </td>
+            <td id="sterling-dit2">
+                <script>javascript: createEnvironmentTable('sterling-dit2', 'dit2-sterling', '')</script>
+            </td>
+            <td id="sterling-dit3">
+                <script>javascript: createEnvironmentTable('sterling-dit3', 'dit3-sterling', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/Enterprise%20Services%20CI/job/enterprise-transfer-order-service-ci/"
+                                            target="_blank">Transfer order service</a></td>
+            <td id="transfer-order-prod-1">
+                <script>javascript: createEnvironmentTable('transfer-order-prod-1', 'stlrck-vccn023', '8486')</script>
+            </td>
+            <td id="transfer-order-prod-2">
+                <script>javascript: createEnvironmentTable('transfer-order-prod-2', 'stlrck-vccn024', '8486')</script>
+            </td>
+            <td id="transfer-order-prf1">
+                <script>javascript: createEnvironmentTable('transfer-order-prf1', 'prf1-apises', '8486')</script>
+            </td>
+            <td id="transfer-order-stst">
+                <script>javascript: createEnvironmentTable('transfer-order-stst', 'eqa1-apises', '8486')</script>
+            </td>
+            <td id="transfer-order-stst2">
+                <script>javascript: createEnvironmentTable('transfer-order-stst2', 'eqa2-apises', '8486')</script>
+            </td>
+            <td id="transfer-order-eqa3">
+                <script>javascript: createEnvironmentTable('transfer-order-eqa3', 'eqa3-apises', '8486')</script>
+            </td>
+            <td id="transfer-order-dit1">
+                <script>javascript: createEnvironmentTable('transfer-order-dit1', 'dit1-apises', '8486')</script>
+            </td>
+            <td id="transfer-order-dit2">
+                <script>javascript: createEnvironmentTable('transfer-order-dit2', 'dit2-apises', '8486')</script>
+            </td>
+            <td id="transfer-order-dit3">
+                <script>javascript: createEnvironmentTable('transfer-order-dit3', 'dit3-apises', '8486')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/Enterprise%20Services%20CI/job/enterprise-optoro-feed-processor-ci/"
+                                            target="_blank">Integration Hub</a></td>
+            <td id="integration-hub-prod-1">
+                <script>javascript: createEnvironmentTable('integration-hub-prod-1', 'optrck-vccn005', '8488')</script>
+            </td>
+            <td id="integration-hub-prod-2">
+                <script>javascript: createEnvironmentTable('integration-hub-prod-2', 'optrck-vccn006', '8488')</script>
+            </td>
+            <td id="integration-hub-prf1">
+                <script>javascript: createEnvironmentTable('integration-hub-prf1', 'prf1-apises', '8488')</script>
+            </td>
+            <td id="integration-hub-stst">
+                <script>javascript: createEnvironmentTable('integration-hub-stst', 'eqa1-apises', '8488')</script>
+            </td>
+            <td id="integration-hub-stst2">
+                <script>javascript: createEnvironmentTable('integration-hub-stst2', 'eqa2-apises', '8488')</script>
+            </td>
+            <td id="integration-hub-eqa3">
+                <script>javascript: createEnvironmentTable('integration-hub-eqa3', 'eqa3-apises', '8488')</script>
+            </td>
+            <td id="integration-hub-dit1">
+                <script>javascript: createEnvironmentTable('integration-hub-dit1', 'dit1-apises', '8488')</script>
+            </td>
+            <td id="integration-hub-dit2">
+                <script>javascript: createEnvironmentTable('integration-hub-dit2', 'dit2-apises', '8488')</script>
+            </td>
+            <td id="integration-hub-dit3">
+                <script>javascript: createEnvironmentTable('integration-hub-dit3', 'dit3-apises', '8488')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/Enterprise%20Services%20CI/job/enterprise-wsi-gateway-ci/"
+                                            target="_blank">WSI Gateway</a></td>
+            <td id="gateway-prod-1">
+                <script>javascript: createEnvironmentTable('gateway-prod-1', 'optrck-vccn003', '8489')</script>
+            </td>
+            <td id="gateway-prod-2">
+                <script>javascript: createEnvironmentTable('gateway-prod-2', 'optrck-vccn004', '8489')</script>
+            </td>
+            <td id="gateway-prf1">
+                <script>javascript: createEnvironmentTable('gateway-prf1', 'prf1-apises', '8489')</script>
+            </td>
+            <td id="gateway-stst">
+                <script>javascript: createEnvironmentTable('gateway-stst', 'eqa1-apises', '8489')</script>
+            </td>
+            <td id="gateway-stst2">
+                <script>javascript: createEnvironmentTable('gateway-stst2', 'eqa2-apises', '8489')</script>
+            </td>
+            <td id="gateway-eqa3">
+                <script>javascript: createEnvironmentTable('gateway-eqa3', 'eqa3-apises', '8489')</script>
+            </td>
+            <td id="gateway-dit1">
+                <script>javascript: createEnvironmentTable('gateway-dit1', 'dit1-apises', '8489')</script>
+            </td>
+            <td id="gateway-dit2">
+                <script>javascript: createEnvironmentTable('gateway-dit2', 'dit2-apises', '8489')</script>
+            </td>
+            <td id="gateway-dit3">
+                <script>javascript: createEnvironmentTable('gateway-dit3', 'dit3-apises', '8489')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/appointment-service/job/service-publish/"
+                                            target="_blank">Appointment Service k8</a></td>
+            <td id="Appointment-service-prod-1">
+                <script>javascript: createEnvironmentTable('Appointment-service-prod-1', 'appointments-supplychain.services.west', '')</script>
+            </td>
+            <td id="Appointment-service-prod-2">
+                <script>javascript: createEnvironmentTable('Appointment-service-prod-2', 'appointments-supplychain.services.east', '')</script>
+            </td>
+            <td id="Appointment-service-prf1">
+                <script>javascript: createEnvironmentTable('Appointment-service-prf1', 'prf1-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Appointment-service-stst">
+                <script>javascript: createEnvironmentTable('Appointment-service-stst', 'eqa1-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Appointment-service-stst2">
+                <script>javascript: createEnvironmentTable('Appointment-service-stst2', 'eqa2-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Appointment-service-eqa3">
+                <script>javascript: createEnvironmentTable('Appointment-service-eqa3', 'eqa3-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Appointment-service-dit1">
+                <script>javascript: createEnvironmentTable('Appointment-service-dit1', 'dit1-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Appointment-service-dit2">
+                <script>javascript: createEnvironmentTable('Appointment-service-dit2', 'dit2-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Appointment-service-dit3">
+                <script>javascript: createEnvironmentTable('Appointment-service-dit3', 'dit3-Appointment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/business-operation-service-K8/job/service-publish/"
+                                            target="_blank">Business Operation Service k8</a></td>
+            <td id="business-operation-service-prod-1">
+                <script>javascript: createEnvironmentTable('business-operation-service-prod-1', 'business-operations-supplychain.services.west', '')</script>
+            </td>
+            <td id="business-operation-service-prod-2">
+                <script>javascript: createEnvironmentTable('business-operation-service-prod-2', 'business-operations-supplychain.services.east', '')</script>
+            </td>
+            <td id="business-operation-service-prf1">
+                <script>javascript: createEnvironmentTable('business-operation-service-prf1', 'prf1-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="business-operation-service-stst">
+                <script>javascript: createEnvironmentTable('business-operation-service-stst', 'eqa1-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="business-operation-service-stst2">
+                <script>javascript: createEnvironmentTable('business-operation-service-stst2', 'eqa2-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="business-operation-service-eqa3">
+                <script>javascript: createEnvironmentTable('business-operation-service-eqa3', 'eqa3-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="business-operation-service-dit1">
+                <script>javascript: createEnvironmentTable('business-operation-service-dit1', 'dit1-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="business-operation-service-dit2">
+                <script>javascript: createEnvironmentTable('business-operation-service-dit2', 'dit2-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="business-operation-service-dit3">
+                <script>javascript: createEnvironmentTable('business-operation-service-dit3', 'dit3-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/capacity-management-service-k8/job/service-publish/"
+                                            target="_blank">Capacity Management Service k8</a></td>
+            <td id="capacity-management-service-prod-1">
+                <script>javascript: createEnvironmentTable('capacity-management-service-prod-1', 'capacity-management-supplychain.services.west', '')</script>
+            </td>
+            <td id="capacity-management-service-prod-2">
+                <script>javascript: createEnvironmentTable('capacity-management-service-prod-2', 'capacity-management-supplychain.services.east', '')</script>
+            </td>
+            <td id="capacity-management-service-prf1">
+                <script>javascript: createEnvironmentTable('capacity-management-service-prf1', 'prf1-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="capacity-management-service-stst">
+                <script>javascript: createEnvironmentTable('capacity-management-service-stst', 'eqa1-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="capacity-management-service-stst2">
+                <script>javascript: createEnvironmentTable('capacity-management-service-stst2', 'eqa2-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="capacity-management-service-eqa3">
+                <script>javascript: createEnvironmentTable('capacity-management-service-eqa3', 'eqa3-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="capacity-management-service-dit1">
+                <script>javascript: createEnvironmentTable('capacity-management-service-dit1', 'dit1-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="capacity-management-service-dit2">
+                <script>javascript: createEnvironmentTable('capacity-management-service-dit2', 'dit2-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="capacity-management-service-dit3">
+                <script>javascript: createEnvironmentTable('capacity-management-service-dit3', 'dit3-capacity-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/cms-rest-service-k8/job/service-publish/"
+                                            target="_blank">CMS Rest Service k8</a></td>
+            <td id="cms-rest-service-prod-1">
+                <script>javascript: createEnvironmentTable('cms-rest-service-prod-1', 'cms-rest-supplychain.services.west', '')</script>
+            </td>
+            <td id="cms-rest-service-prod-2">
+                <script>javascript: createEnvironmentTable('cms-rest-service-prod-2', 'cms-rest-supplychain.services.east', '')</script>
+            </td>
+            <td id="cms-rest-service-prf1">
+                <script>javascript: createEnvironmentTable('cms-rest-service-prf1', 'prf1-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="cms-rest-service-stst">
+                <script>javascript: createEnvironmentTable('cms-rest-service-stst', 'eqa1-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="cms-rest-service-stst2">
+                <script>javascript: createEnvironmentTable('cms-rest-service-stst2', 'eqa2-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="cms-rest-service-eqa3">
+                <script>javascript: createEnvironmentTable('cms-rest-service-eqa3', 'eqa3-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="cms-rest-service-dit1">
+                <script>javascript: createEnvironmentTable('cms-rest-service-dit1', 'dit1-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="cms-rest-service-dit2">
+                <script>javascript: createEnvironmentTable('cms-rest-service-dit2', 'dit2-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="cms-rest-service-dit3">
+                <script>javascript: createEnvironmentTable('cms-rest-service-dit3', 'dit3-cms-rest-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/concierge-service-K8/job/service-publish/"
+                                            target="_blank">Concierge Service k8</a></td>
+            <td id="Concierge-service-prod-1">
+                <script>javascript: createEnvironmentTable('Concierge-service-prod-1', 'concierge-supplychain.services.west', '')</script>
+            </td>
+            <td id="Concierge-service-prod-2">
+                <script>javascript: createEnvironmentTable('Concierge-service-prod-2', 'concierge-supplychain.services.east', '')</script>
+            </td>
+            <td id="Concierge-service-prf1">
+                <script>javascript: createEnvironmentTable('Concierge-service-prf1', 'prf1-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Concierge-service-stst">
+                <script>javascript: createEnvironmentTable('Concierge-service-stst', 'eqa1-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Concierge-service-stst2">
+                <script>javascript: createEnvironmentTable('Concierge-service-stst2', 'eqa2-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Concierge-service-eqa3">
+                <script>javascript: createEnvironmentTable('Concierge-service-eqa3', 'eqa3-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Concierge-service-dit1">
+                <script>javascript: createEnvironmentTable('Concierge-service-dit1', 'dit1-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Concierge-service-dit2">
+                <script>javascript: createEnvironmentTable('Concierge-service-dit2', 'dit2-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Concierge-service-dit3">
+                <script>javascript: createEnvironmentTable('Concierge-service-dit3', 'dit3-concierge-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/customer-management-service-k8/job/service-publish/"
+                                            target="_blank">Customer Management Service k8</a></td>
+            <td id="customer-management-service-prod-1">
+                <script>javascript: createEnvironmentTable('customer-management-service-prod-1', 'customer-management-supplychain.services.west', '')</script>
+            </td>
+            <td id="customer-management-service-prod-2">
+                <script>javascript: createEnvironmentTable('customer-management-service-prod-2', 'customer-management-supplychain.services.east', '')</script>
+            </td>
+            <td id="customer-management-service-prf1">
+                <script>javascript: createEnvironmentTable('customer-management-service-prf1', 'prf1-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="customer-management-service-stst">
+                <script>javascript: createEnvironmentTable('customer-management-service-stst', 'eqa1-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="customer-management-service-stst2">
+                <script>javascript: createEnvironmentTable('customer-management-service-stst2', 'eqa2-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="customer-management-service-eqa3">
+                <script>javascript: createEnvironmentTable('customer-management-service-eqa3', 'eqa3-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="customer-management-service-dit1">
+                <script>javascript: createEnvironmentTable('customer-management-service-dit1', 'dit1-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="customer-management-service-dit2">
+                <script>javascript: createEnvironmentTable('customer-management-service-dit2', 'dit2-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="customer-management-service-dit3">
+                <script>javascript: createEnvironmentTable('customer-management-service-dit3', 'dit3-customer-management-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/DAXOutAdapter-k8/job/service-publish/"
+                                            target="_blank">Daxoutadapter Service k8</a></td>
+            <td id="daxoutadapter-prod-1">
+                <script>javascript: createEnvironmentTable('daxoutadapter-prod-1', 'daxoutadapter-supplychain.services.west', '')</script>
+            </td>
+            <td id="daxoutadapter-prod-2">
+                <script>javascript: createEnvironmentTable('daxoutadapter-prod-2', 'daxoutadapter-supplychain.services.east', '')</script>
+            </td>
+            <td id="daxoutadapter-prf1">
+                <script>javascript: createEnvironmentTable('daxoutadapter-prf1', 'prf1-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="daxoutadapter-stst">
+                <script>javascript: createEnvironmentTable('daxoutadapter-stst', 'eqa1-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="daxoutadapter-stst2">
+                <script>javascript: createEnvironmentTable('daxoutadapter-stst2', 'eqa2-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="daxoutadapter-eqa3">
+                <script>javascript: createEnvironmentTable('daxoutadapter-eqa3', 'eqa3-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="daxoutadapter-dit1">
+                <script>javascript: createEnvironmentTable('daxoutadapter-dit1', 'dit1-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="daxoutadapter-dit2">
+                <script>javascript: createEnvironmentTable('daxoutadapter-dit2', 'dit2-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="daxoutadapter-dit3">
+                <script>javascript: createEnvironmentTable('daxoutadapter-dit3', 'dit3-daxoutadapter-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/event-reconciliation-K8/job/service-publievent-reconciliation/"
+                                            target="_blank">Event Reconciliation K8</a></td>
+            <td id="event-reconciliation-prod-1">
+                <script>javascript: createEnvironmentTable('event-reconciliation-prod-1', 'event-reconciliation-supplychain.services.west', '')</script>
+            </td>
+            <td id="event-reconciliation-prod-2">
+                <script>javascript: createEnvironmentTable('event-reconciliation-prod-2', 'event-reconciliation-supplychain.services.east', '')</script>
+            </td>
+            <td id="event-reconciliation-prf1">
+                <script>javascript: createEnvironmentTable('event-reconciliation-prf1', 'prf1-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="event-reconciliation-stst">
+                <script>javascript: createEnvironmentTable('event-reconciliation-stst', 'eqa1-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="event-reconciliation-stst2">
+                <script>javascript: createEnvironmentTable('event-reconciliation-stst2', 'eqa2-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="event-reconciliation-eqa3">
+                <script>javascript: createEnvironmentTable('event-reconciliation-eqa3', 'eqa3-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="event-reconciliation-dit1">
+                <script>javascript: createEnvironmentTable('event-reconciliation-dit1', 'dit1-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="event-reconciliation-dit2">
+                <script>javascript: createEnvironmentTable('event-reconciliation-dit2', 'dit2-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="event-reconciliation-dit3">
+                <script>javascript: createEnvironmentTable('event-reconciliation-dit3', 'dit3-event-reconciliation-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/inventory-service-K8/job/service-publish/"
+                                            target="_blank">Inventory Service K8</a></td>
+            <td id="inventory-service-prod-1">
+                <script>javascript: createEnvironmentTable('inventory-service-prod-1', 'inventory-supplychain.services.west', '')</script>
+            </td>
+            <td id="inventory-service-prod-2">
+                <script>javascript: createEnvironmentTable('inventory-service-prod-2', 'inventory-supplychain.services.east', '')</script>
+            </td>
+            <td id="inventory-service-prf1">
+                <script>javascript: createEnvironmentTable('inventory-service-prf1', 'prf1-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-service-stst">
+                <script>javascript: createEnvironmentTable('inventory-service-stst', 'eqa1-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-service-stst2">
+                <script>javascript: createEnvironmentTable('inventory-service-stst2', 'eqa2-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-service-eqa3">
+                <script>javascript: createEnvironmentTable('inventory-service-eqa3', 'eqa3-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-service-dit1">
+                <script>javascript: createEnvironmentTable('inventory-service-dit1', 'dit1-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-service-dit2">
+                <script>javascript: createEnvironmentTable('inventory-service-dit2', 'dit2-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-service-dit3">
+                <script>javascript: createEnvironmentTable('inventory-service-dit3', 'dit3-inventory-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/inventory-orchestrator-service-K8/job/service-publish/"
+                                            target="_blank">Inventory Orchestrator Service K8</a></td>
+            <td id="inventory-orchestrator-service-prod-1">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-prod-1', 'inventory-orchestrator-supplychain.services.west', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-prod-2">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-prod-2', 'inventory-orchestrator-supplychain.services.east', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-prf1">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-prf1', 'prf1-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-stst">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-stst', 'eqa1-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-stst2">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-stst2', 'eqa2-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-eqa3">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-eqa3', 'eqa3-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-dit1">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-dit1', 'dit1-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-dit2">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-dit2', 'dit2-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="inventory-orchestrator-service-dit3">
+                <script>javascript: createEnvironmentTable('inventory-orchestrator-service-dit3', 'dit3-inventory-orchestrator-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/item-master-to-sdm-K8/job/service-publish/"
+                                            target="_blank">Item Master To Sdm K8</a></td>
+            <td id="item-master-to-sdm-prod-1">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-prod-1', 'item-master-to-sdm.services.west', '')</script>
+            </td>
+            <td id="item-master-to-sdm-prod-2">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-prod-2', 'item-master-to-sdm.services.east', '')</script>
+            </td>
+            <td id="item-master-to-sdm-prf1">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-prf1', 'prf1-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-master-to-sdm-stst">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-stst', 'eqa1-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-master-to-sdm-stst2">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-stst2', 'eqa2-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-master-to-sdm-eqa3">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-eqa3', 'eqa3-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-master-to-sdm-dit1">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-dit1', 'dit1-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-master-to-sdm-dit2">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-dit2', 'dit2-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-master-to-sdm-dit3">
+                <script>javascript: createEnvironmentTable('item-master-to-sdm-dit3', 'dit3-item-master-to-sdm-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/item-service-K8/job/service-publish/"
+                                            target="_blank">Item Service K8</a></td>
+            <td id="item-service-prod-1">
+                <script>javascript: createEnvironmentTable('item-service-prod-1', 'items-supplychain.services.west', '')</script>
+            </td>
+            <td id="item-service-prod-2">
+                <script>javascript: createEnvironmentTable('item-service-prod-2', 'items-supplychain.services.east', '')</script>
+            </td>
+            <td id="item-service-prf1">
+                <script>javascript: createEnvironmentTable('item-service-prf1', 'prf1-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-service-stst">
+                <script>javascript: createEnvironmentTable('item-service-stst', 'eqa1-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-service-stst2">
+                <script>javascript: createEnvironmentTable('item-service-stst2', 'eqa2-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-service-eqa3">
+                <script>javascript: createEnvironmentTable('item-service-eqa3', 'eqa3-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-service-dit1">
+                <script>javascript: createEnvironmentTable('item-service-dit1', 'dit1-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-service-dit2">
+                <script>javascript: createEnvironmentTable('item-service-dit2', 'dit2-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="item-service-dit3">
+                <script>javascript: createEnvironmentTable('item-service-dit3', 'dit3-item-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/log-service-K8/job/service-publish/"
+                                            target="_blank">log Service K8</a></td>
+            <td id="log-service-prod-1">
+                <script>javascript: createEnvironmentTable('log-service-prod-1', 'logs-supplychain.services.west', '')</script>
+            </td>
+            <td id="log-service-prod-2">
+                <script>javascript: createEnvironmentTable('log-service-prod-2', 'logs-supplychain.services.east', '')</script>
+            </td>
+            <td id="log-service-prf1">
+                <script>javascript: createEnvironmentTable('log-service-prf1', 'prf1-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="log-service-stst">
+                <script>javascript: createEnvironmentTable('log-service-stst', 'eqa1-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="log-service-stst2">
+                <script>javascript: createEnvironmentTable('log-service-stst2', 'eqa2-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="log-service-eqa3">
+                <script>javascript: createEnvironmentTable('log-service-eqa3', 'eqa3-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="log-service-dit1">
+                <script>javascript: createEnvironmentTable('log-service-dit1', 'dit1-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="log-service-dit2">
+                <script>javascript: createEnvironmentTable('log-service-dit2', 'dit2-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="log-service-dit3">
+                <script>javascript: createEnvironmentTable('log-service-dit3', 'dit3-log-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/notification-service-K8/job/service-publish/"
+                                            target="_blank">notification Service K8</a></td>
+            <td id="notification-service-prod-1">
+                <script>javascript: createEnvironmentTable('notification-service-prod-1', 'notifications-supplychain.services.west', '')</script>
+            </td>
+            <td id="notification-service-prod-2">
+                <script>javascript: createEnvironmentTable('notification-service-prod-2', 'notifications-supplychain.services.east', '')</script>
+            </td>
+            <td id="notification-service-prf1">
+                <script>javascript: createEnvironmentTable('notification-service-prf1', 'prf1-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="notification-service-stst">
+                <script>javascript: createEnvironmentTable('notification-service-stst', 'eqa1-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="notification-service-stst2">
+                <script>javascript: createEnvironmentTable('notification-service-stst2', 'eqa2-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="notification-service-eqa3">
+                <script>javascript: createEnvironmentTable('notification-service-eqa3', 'eqa3-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="notification-service-dit1">
+                <script>javascript: createEnvironmentTable('notification-service-dit1', 'dit1-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="notification-service-dit2">
+                <script>javascript: createEnvironmentTable('notification-service-dit2', 'dit2-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="notification-service-dit3">
+                <script>javascript: createEnvironmentTable('notification-service-dit3', 'dit3-notification-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/oms-event-hub-K8/job/service-publish/"
+                                            target="_blank">oms-event-hub k8</a></td>
+            <td id="oms-event-hub-service-prod-1">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-prod-1', 'event-hub-supplychain.services.west', '')</script>
+            </td>
+            <td id="oms-event-hub-service-prod-2">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-prod-2', 'event-hub-supplychain.services.east', '')</script>
+            </td>
+            <td id="oms-event-hub-service-prf1">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-prf1', 'prf1-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="oms-event-hub-service-stst">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-stst', 'eqa1-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="oms-event-hub-service-stst2">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-stst2', 'eqa2-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="oms-event-hub-service-eqa3">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-eqa3', 'eqa3-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="oms-event-hub-service-dit1">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-dit1', 'dit1-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="oms-event-hub-service-dit2">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-dit2', 'dit2-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="oms-event-hub-service-dit3">
+                <script>javascript: createEnvironmentTable('oms-event-hub-service-dit3', 'dit3-oms-event-hub-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/order-service-K8/job/service-publish/"
+                                            target="_blank">order Service K8</a></td>
+            <td id="order-service-prod-1">
+                <script>javascript: createEnvironmentTable('order-service-prod-1', 'orders-supplychain.services.west', '')</script>
+            </td>
+            <td id="order-service-prod-2">
+                <script>javascript: createEnvironmentTable('order-service-prod-2', 'orders-supplychain.services.east', '')</script>
+            </td>
+            <td id="order-service-prf1">
+                <script>javascript: createEnvironmentTable('order-service-prf1', 'prf1-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-service-stst">
+                <script>javascript: createEnvironmentTable('order-service-stst', 'eqa1-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-service-stst2">
+                <script>javascript: createEnvironmentTable('order-service-stst2', 'eqa2-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-service-eqa3">
+                <script>javascript: createEnvironmentTable('order-service-eqa3', 'eqa3-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-service-dit1">
+                <script>javascript: createEnvironmentTable('order-service-dit1', 'dit1-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-service-dit2">
+                <script>javascript: createEnvironmentTable('order-service-dit2', 'dit2-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-service-dit3">
+                <script>javascript: createEnvironmentTable('order-service-dit3', 'dit3-order-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/reservation-service-K8/job/service-publish/"
+                                            target="_blank">Reservation Service k8</a></td>
+            <td id="Reservation-service-prod-1">
+                <script>javascript: createEnvironmentTable('Reservation-service-prod-1', 'reservations-supplychain.services.west', '')</script>
+            </td>
+            <td id="Reservation-service-prod-2">
+                <script>javascript: createEnvironmentTable('Reservation-service-prod-2', 'reservations-supplychain.services.east', '')</script>
+            </td>
+            <td id="Reservation-service-prf1">
+                <script>javascript: createEnvironmentTable('Reservation-service-prf1', 'prf1-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Reservation-service-stst">
+                <script>javascript: createEnvironmentTable('Reservation-service-stst', 'eqa1-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Reservation-service-stst2">
+                <script>javascript: createEnvironmentTable('Reservation-service-stst2', 'eqa2-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Reservation-service-eqa3">
+                <script>javascript: createEnvironmentTable('Reservation-service-eqa3', 'eqa3-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Reservation-service-dit1">
+                <script>javascript: createEnvironmentTable('Reservation-service-dit1', 'dit1-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Reservation-service-dit2">
+                <script>javascript: createEnvironmentTable('Reservation-service-dit2', 'dit2-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Reservation-service-dit3">
+                <script>javascript: createEnvironmentTable('Reservation-service-dit3', 'dit3-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/return-service-K8/job/service-publish/"
+                                            target="_blank">return Service k8</a></td>
+            <td id="return-service-prod-1">
+                <script>javascript: createEnvironmentTable('return-service-prod-1', 'returns-supplychain.services.west', '')</script>
+            </td>
+            <td id="return-service-prod-2">
+                <script>javascript: createEnvironmentTable('return-service-prod-2', 'returns-supplychain.services.east', '')</script>
+            </td>
+            <td id="return-service-prf1">
+                <script>javascript: createEnvironmentTable('return-service-prf1', 'prf1-return-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="return-service-stst">
+                <script>javascript: createEnvironmentTable('return-service-stst', 'eqa1-return-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="return-service-stst2">
+                <script>javascript: createEnvironmentTable('return-service-stst2', 'eqa2-return-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="return-service-eqa3">
+                <script>javascript: createEnvironmentTable('return-service-eqa3', 'eqa3-return-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="return-service-dit1">
+                <script>javascript: createEnvironmentTable('return-service-dit1', 'dit1-return-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="return-service-dit2">
+                <script>javascript: createEnvironmentTable('return-service-dit2', 'dit2-return-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="return-service-dit3">
+                <script>javascript: createEnvironmentTable('return-service-dit3', 'dit3-reservation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/search-service-k8/job/service-publish/"
+                                            target="_blank">Search Service k8</a></td>
+            <td id="Search-service-prod-1">
+                <script>javascript: createEnvironmentTable('Search-service-prod-1', 'search-orders-supplychain.services.west', '')</script>
+            </td>
+            <td id="Search-service-prod-2">
+                <script>javascript: createEnvironmentTable('Search-service-prod-2', 'search-orders-supplychain.services.east', '')</script>
+            </td>
+            <td id="Search-service-prf1">
+                <script>javascript: createEnvironmentTable('Search-service-prf1', 'prf1-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Search-service-stst">
+                <script>javascript: createEnvironmentTable('Search-service-stst', 'eqa1-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Search-service-stst2">
+                <script>javascript: createEnvironmentTable('Search-service-stst2', 'eqa2-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Search-service-eqa3">
+                <script>javascript: createEnvironmentTable('Search-service-eqa3', 'eqa3-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Search-service-dit1">
+                <script>javascript: createEnvironmentTable('Search-service-dit1', 'dit1-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Search-service-dit2">
+                <script>javascript: createEnvironmentTable('Search-service-dit2', 'dit2-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Search-service-dit3">
+                <script>javascript: createEnvironmentTable('Search-service-dit3', 'dit3-search-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/shipment-service-K8/job/service-publish/"
+                                            target="_blank">Shipment Service K8</a></td>
+            <td id="Shipment-service-prod-1">
+                <script>javascript: createEnvironmentTable('Shipment-service-prod-1', 'shipments-supplychain.services.west', '')</script>
+            </td>
+            <td id="Shipment-service-prod-2">
+                <script>javascript: createEnvironmentTable('Shipment-service-prod-2', 'shipments-supplychain.services.east', '')</script>
+            </td>
+            <td id="Shipment-service-prf1">
+                <script>javascript: createEnvironmentTable('Shipment-service-prf1', 'prf1-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Shipment-service-stst">
+                <script>javascript: createEnvironmentTable('Shipment-service-stst', 'eqa1-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Shipment-service-stst2">
+                <script>javascript: createEnvironmentTable('Shipment-service-stst2', 'eqa2-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Shipment-service-eqa3">
+                <script>javascript: createEnvironmentTable('Shipment-service-eqa3', 'eqa3-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Shipment-service-dit1">
+                <script>javascript: createEnvironmentTable('Shipment-service-dit1', 'dit1-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Shipment-service-dit2">
+                <script>javascript: createEnvironmentTable('Shipment-service-dit2', 'dit2-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="Shipment-service-dit3">
+                <script>javascript: createEnvironmentTable('Shipment-service-dit3', 'dit3-shipment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/shiptostore-service-k8/job/service-publish/"
+                                            target="_blank">shiptostore Service k8</a></td>
+            <td id="shiptostore-service-prod-1">
+                <script>javascript: createEnvironmentTable('shiptostore-service-prod-1', 'shiptostore-supplychain.services.west', '')</script>
+            </td>
+            <td id="shiptostore-service-prod-2">
+                <script>javascript: createEnvironmentTable('shiptostore-service-prod-2', 'shiptostore-supplychain.services.east', '')</script>
+            </td>
+            <td id="shiptostore-service-prf1">
+                <script>javascript: createEnvironmentTable('shiptostore-service-prf1', 'prf1-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="shiptostore-service-stst">
+                <script>javascript: createEnvironmentTable('shiptostore-service-stst', 'eqa1-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="shiptostore-service-stst2">
+                <script>javascript: createEnvironmentTable('shiptostore-service-stst2', 'eqa2-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="shiptostore-service-eqa3">
+                <script>javascript: createEnvironmentTable('shiptostore-service-eqa3', 'eqa3-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="shiptostore-service-dit1">
+                <script>javascript: createEnvironmentTable('shiptostore-service-dit1', 'dit1-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="shiptostore-service-dit2">
+                <script>javascript: createEnvironmentTable('shiptostore-service-dit2', 'dit2-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="shiptostore-service-dit3">
+                <script>javascript: createEnvironmentTable('shiptostore-service-dit3', 'dit3-shiptostore-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/order-fulfillment-service-K8/job/service-publish/"
+                                            target="_blank">Order Fulfillment Service K8</a></td>
+            <td id="order-fulfillment-service-prod-1">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-prod-1', 'order-fulfillments-supplychain.services.west', '')</script>
+            </td>
+            <td id="order-fulfillment-service-prod-2">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-prod-2', 'order-fulfillments-supplychain.services.east', '')</script>
+            </td>
+            <td id="order-fulfillment-service-prf1">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-prf1', 'prf1-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-fulfillment-service-stst">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-stst', 'eqa1-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-fulfillment-service-stst2">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-stst2', 'eqa2-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-fulfillment-service-eqa3">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-eqa3', 'eqa3-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-fulfillment-service-dit1">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-dit1', 'dit1-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-fulfillment-service-dit2">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-dit2', 'dit2-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="order-fulfillment-service-dit3">
+                <script>javascript: createEnvironmentTable('order-fulfillment-service-dit3', 'dit3-order-fulfillment-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/store-business-operation-service-K8/job/service-publish/"
+                                            target="_blank">store business operation Service k8</a></td>
+            <td id="store-business-operation-service-prod-1">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-prod-1', 'store-biz-ops-supplychain.services.west', '')</script>
+            </td>
+            <td id="store-business-operation-service-prod-2">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-prod-2', 'store-biz-ops-supplychain.services.east', '')</script>
+            </td>
+            <td id="store-business-operation-service-prf1">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-prf1', 'prf1-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="store-business-operation-service-stst">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-stst', 'eqa1-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="store-business-operation-service-stst2">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-stst2', 'eqa2-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="store-business-operation-service-eqa3">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-eqa3', 'eqa3-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="store-business-operation-service-dit1">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-dit1', 'dit1-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="store-business-operation-service-dit2">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-dit2', 'dit2-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="store-business-operation-service-dit3">
+                <script>javascript: createEnvironmentTable('store-business-operation-service-dit3', 'dit3-store-business-operation-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: left"><a class="badge badge-info"
+                                            href="https://supplychain-build.wsgc.com/view/SupplyChain-DevOps-K8/job/vendor-feed-service-k8/job/service-publish/"
+                                            target="_blank">vendor-feed Service k8</a></td>
+            <td id="vendor-feed-service-prod-1">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-prod-1', 'vendor-supplychain.services.west', '')</script>
+            </td>
+            <td id="vendor-feed-service-prod-2">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-prod-2', 'vendor-supplychain.services.east', '')</script>
+            </td>
+            <td id="vendor-feed-service-prf1">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-prf1', 'prf1-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="vendor-feed-service-stst">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-stst', 'eqa1-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="vendor-feed-service-stst2">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-stst2', 'eqa2-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="vendor-feed-service-eqa3">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-eqa3', 'eqa3-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="vendor-feed-service-dit1">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-dit1', 'dit1-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="vendor-feed-service-dit2">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-dit2', 'dit2-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+            <td id="vendor-feed-service-dit3">
+                <script>javascript: createEnvironmentTable('vendor-feed-service-dit3', 'dit3-vendor-feed-service-supplychain.services.west.nonprod', '')</script>
+            </td>
+        </tr>
+    </table>
+    <br />
+</center>
+</body>
+
+</html>
