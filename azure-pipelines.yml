@@ -1,8 +1,3 @@
-# HTML
-# Archive your static HTML project and save it with the build record.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -11,15 +6,24 @@ pool:
 
 steps:
 - task: ArchiveFiles@2
+  displayName: 'Archive HTML files'
   inputs:
     rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/site.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/html_project.zip'
+    replaceExistingArchive: true
 
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/site.zip'
-    ArtifactName: 'drop'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/html_project.zip'
+    ArtifactName: 'html_project'
     publishLocation: 'container'
 
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure Web App'
+  inputs:
+    azureSubscription: '<Your-Azure-Subscription-Service-Connection>'
+    appName: '<Your-Web-App-Name>'
+    package: '$(Build.ArtifactStagingDirectory)/html_project.zip'
