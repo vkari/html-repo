@@ -7,22 +7,19 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
 - task: ArchiveFiles@2
-  displayName: 'Archive HTML files'
   inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)'  # Specify the directory containing your HTML files
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
     includeRootFolder: false
-    archiveType: 'zip'  # The type of archive to create
-    archiveFile: '$(Build.ArtifactStagingDirectory)/html_project.zip'  # Output archive file path
-    replaceExistingArchive: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/site.zip'
 
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifacts'
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/html_project.zip'  # Path to the archive to publish
-    ArtifactName: 'html_project'  # Name of the artifact
-    publishLocation: 'container'  # Target location to publish the artifacts
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/site.zip'
+    ArtifactName: 'drop'
+    publishLocation: 'container'
 
