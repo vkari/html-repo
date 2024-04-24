@@ -11,7 +11,18 @@ pool:
 
 steps:
 - task: ArchiveFiles@2
+  displayName: 'Archive HTML files'
   inputs:
-    rootFolderOrFile: '$(build.sourcesDirectory)'
+    rootFolderOrFile: '$(Build.SourcesDirectory)'  # Specify the directory containing your HTML files
     includeRootFolder: false
+    archiveType: 'zip'  # The type of archive to create
+    archiveFile: '$(Build.ArtifactStagingDirectory)/html_project.zip'  # Output archive file path
+    replaceExistingArchive: true
+
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/html_project.zip'  # Path to the archive to publish
+    ArtifactName: 'html_project'  # Name of the artifact
+    publishLocation: 'container'  # Target location to publish the artifacts
+
