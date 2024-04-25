@@ -14,19 +14,35 @@ steps:
   displayName: 'Run a multi-line script'
 
 - script: |
-    echo "Printing the hostname:"
-    hostname
-    echo "Printing the current working directory:"
-    pwd
-    echo "Listing environment variables:"
-    printenv
-  displayName: 'Display environment details'
+    echo "Displaying some specific environment variables:"
+    echo "Build Requested For: $BUILD_REQUESTEDFOR"
+    echo "Chrome Binary Location: $CHROME_BIN"
+    echo "Android NDK Root: $ANDROID_NDK_ROOT"
+    echo "Go Root for 1.22.x: $GOROOT_1_22_X64"
+    echo "System Default Working Directory: $SYSTEM_DEFAULTWORKINGDIRECTORY"
+    echo "Pipeline Workspace: $PIPELINE_WORKSPACE"
+  displayName: 'Show selected environment variables'
 
 - script: |
-    echo "Here are additional details about disk usage:"
-    df -h
-    echo "Checking available memory:"
-    free -h
-    ls -lrt /mnt
-  displayName: 'System resource usage'
+    echo "Checking software versions:"
+    echo "Go version:"
+    go version
+    echo "Google Chrome version:"
+    google-chrome --version
+    echo "Java version:"
+    java -version
+  displayName: 'Check software versions'
+
+- script: |
+    echo "System architecture and other details:"
+    echo "System Architecture: $AGENT_OSARCHITECTURE"
+    echo "Image OS: $ImageOS"
+    echo "Agent Status: $AGENT_JOBSTATUS"
+    echo "Swift Path: $SWIFT_PATH"
+  displayName: 'System Details'
+
+- script: |
+    echo "Current path settings:"
+    echo $PATH
+  displayName: 'Display PATH environment variable'
 
