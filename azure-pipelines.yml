@@ -1,9 +1,3 @@
-# Starter pipeline
-# Test deploy n
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -18,3 +12,20 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
+- script: |
+    echo "Printing the hostname:"
+    hostname
+    echo "Printing the current working directory:"
+    pwd
+    echo "Listing environment variables:"
+    printenv
+  displayName: 'Display environment details'
+
+- script: |
+    echo "Here are additional details about disk usage:"
+    df -h
+    echo "Checking available memory:"
+    free -h
+  displayName: 'System resource usage'
+
