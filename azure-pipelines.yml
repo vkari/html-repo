@@ -27,5 +27,6 @@ steps:
     df -h
     echo "Checking available memory:"
     free -h
+    ls -lrt /mnt
   displayName: 'System resource usage'
 
